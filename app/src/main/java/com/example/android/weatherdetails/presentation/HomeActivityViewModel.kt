@@ -17,7 +17,7 @@ import io.reactivex.schedulers.Schedulers
  * and passes this to business layer
  */
 
-class HomeActivityViewModel : ViewModel() {
+internal class HomeActivityViewModel : ViewModel() {
 
     //Livedata channel for weather details object
     internal val weatherDetailsLiveData = MutableLiveData<WeatherDetailsData>()
@@ -27,7 +27,7 @@ class HomeActivityViewModel : ViewModel() {
 
     private var disposable: Disposable? = null
 
-    fun initialize(weatherRepo: WeatherRepository, latitude: String, longitude: String, date: String) {
+    fun initialize(weatherRepo: WeatherRepository = WEATHER_REPO(), latitude: String, longitude: String, date: String) {
         disposable = Single.just(weatherRepo).map {
             it.getWeatherDetails(latitude, longitude, date)
         }.map {
