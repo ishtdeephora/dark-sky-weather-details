@@ -9,7 +9,6 @@ val isPrimeDate: (Int) -> Boolean = { date ->
     (2..date / 2).none { date % it == 0 }
 }
 
-
 val getCurrentDateInAskedFormat: (String) -> String = {
     SimpleDateFormat(it, Locale.US).format(System.currentTimeMillis())
 }
