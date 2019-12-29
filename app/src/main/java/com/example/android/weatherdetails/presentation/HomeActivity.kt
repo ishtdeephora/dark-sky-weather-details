@@ -64,7 +64,9 @@ class HomeActivity : AppCompatActivity() {
                 val utcTime = (epoch?.div(1000))?.toInt()
                 if (location_name_value.text.isNullOrEmpty().not()) {
                     content_loader.visibility = View.VISIBLE
-                    viewModel.initialize(weatherRepo = WEATHER_REPO(), latitude = geocoderLatLongFetcher(this, location_name_value.text.toString()).latitude, longitude = geocoderLatLongFetcher(this, location_name_value.text.toString()).longitude, date = utcTime.toString())
+                    viewModel.initialize(weatherRepo = WEATHER_REPO(), latitude = geocoderLatLongFetcher(this, location_name_value.text.toString()).getOrNull()?.latitude
+                            ?: "", longitude = geocoderLatLongFetcher(this, location_name_value.text.toString()).getOrNull()?.longitude
+                            ?: "", date = utcTime.toString())
                     content_loader.visibility = View.GONE
                 } else {
                     Toast.makeText(this, getString(R.string.no_location_message), Toast.LENGTH_SHORT).show()
