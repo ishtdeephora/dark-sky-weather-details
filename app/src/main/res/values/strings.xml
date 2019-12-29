@@ -12,6 +12,7 @@
     <string name="weather_in_text" translatable="false">Weather in </string>
     <string name="select_date_text" translatable="false">Select date</string>
     <string name="current_city" translatable="false">Enter city name</string>
+    <string name="my_city" translatable="false">Pune</string>
     <string name="proceed_text" translatable="false">Proceed</string>
     <string name="day_time_format" translatable="false">EEEE</string>
 </resources>

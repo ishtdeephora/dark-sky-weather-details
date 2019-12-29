@@ -1,8 +1,6 @@
 package com.example.android.weatherdetails.presentation
 
 import android.app.DatePickerDialog
-import android.icu.text.SimpleDateFormat
-import android.icu.util.Calendar
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -14,6 +12,7 @@ import com.example.android.weatherdetails.utils.getCurrentDateInAskedFormat
 import com.example.android.weatherdetails.utils.hideKeyboard
 import com.example.android.weatherdetails.utils.isPrimeDate
 import kotlinx.android.synthetic.main.activity_main.*
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -26,10 +25,11 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val dateFormat = SimpleDateFormat(getString(R.string.date_format).format(cal.time))
+        val dateFormat = SimpleDateFormat(getString(R.string.date_format).format(cal.time), Locale.US)
         date_edit_text.hint = getCurrentDateInAskedFormat.invoke(getString(R.string.date_format))
         select_date.text = (getString(R.string.select_date_text))
         location_name_value.hint = getString(R.string.current_city)
+        location_name_value.setText(R.string.my_city)
         fetch_details.text = getString(R.string.proceed_text)
         day_value.text = getString(R.string.start_text)
 
@@ -59,9 +59,9 @@ class HomeActivity : AppCompatActivity() {
             val splitDate = date_edit_text.hint.toString().split("/")
             this.hideKeyboard(it)
             if (isPrimeDate(splitDate[0].toInt())) {
-                val epoch = dateFormat.parse(date_edit_text.hint.toString()).time
+                val epoch = dateFormat.parse(date_edit_text?.hint.toString())?.time
                 day_value.text = getString(R.string.weather_in_text).plus(" " + location_name_value.text.toString().toUpperCase() + " on ").plus(SimpleDateFormat(getString(R.string.day_time_format), Locale.US).format(dateFormat.parse(date_edit_text.hint.toString())))
-                val utcTime = (epoch / 1000).toInt()
+                val utcTime = (epoch?.div(1000))?.toInt()
                 if (location_name_value.text.isNullOrEmpty().not()) {
                     content_loader.visibility = View.VISIBLE
                     viewModel.initialize(weatherRepo = WEATHER_REPO(), latitude = geocoderLatLongFetcher(this, location_name_value.text.toString()).latitude, longitude = geocoderLatLongFetcher(this, location_name_value.text.toString()).longitude, date = utcTime.toString())

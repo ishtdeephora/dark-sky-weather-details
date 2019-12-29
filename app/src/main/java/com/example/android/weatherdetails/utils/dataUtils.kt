@@ -1,8 +1,8 @@
 package com.example.android.weatherdetails.utils
 
 import android.content.Context
-import android.icu.text.SimpleDateFormat
 import android.location.Geocoder
+import java.text.SimpleDateFormat
 import java.util.*
 
 val isPrimeDate: (Int) -> Boolean = { date ->
@@ -11,7 +11,7 @@ val isPrimeDate: (Int) -> Boolean = { date ->
 
 
 val getCurrentDateInAskedFormat: (String) -> String = {
-    SimpleDateFormat(it).format(System.currentTimeMillis())
+    SimpleDateFormat(it, Locale.US).format(System.currentTimeMillis())
 }
 
 fun convertFahrenheitToCelsius(temperatureFahrenheit: Double?): Double? =

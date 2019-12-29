@@ -14,7 +14,7 @@ android {
     compileSdkVersion 29
     defaultConfig {
         applicationId "com.example.android.weatherdetails"
-        minSdkVersion 24
+        minSdkVersion 15
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -37,6 +37,11 @@ android {
             buildConfigField ('String', 'API_KEY', API_KEY)
             buildConfigField ('String', 'BASE_URL', BASE_URL)
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
