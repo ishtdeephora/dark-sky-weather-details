@@ -2,6 +2,9 @@ package com.example.android.weatherdetails.remote.entity
 
 import com.google.gson.annotations.SerializedName
 
+/**
+ * Data transfer objects for conversion of API keys
+ */
 data class ResponseDTO(
 
         @field:SerializedName("latitude")

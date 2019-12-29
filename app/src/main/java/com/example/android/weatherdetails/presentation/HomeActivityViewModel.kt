@@ -10,12 +10,19 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 
 /**
- * RxJava implementation for HomeActivity
+ * [HomeActivityViewModel] is the viewmodel holder for [HomeActivity]
+ *
+ * 1. It has the responsibility of making a network call @see [HomeActivityViewModel.initialize]
+ * initialise function takes parameters as business implementation of the repo, latitude, longitude and dote values
+ * and passes this to business layer
  */
+
 class HomeActivityViewModel : ViewModel() {
 
+    //Livedata channel for weather details object
     internal val weatherDetailsLiveData = MutableLiveData<WeatherDetailsData>()
 
+    //Livedata channel for the error scenario
     internal val errorLiveData: LiveData<String> by lazy { MutableLiveData<String>() }
 
     private var disposable: Disposable? = null
@@ -34,11 +41,15 @@ class HomeActivityViewModel : ViewModel() {
         )
     }
 
+
     override fun onCleared() {
         disposable?.dispose()
         super.onCleared()
     }
 
+    /**
+     * Data class for publshing the result to the [HomeActivity] for the response coming from business layer
+     */
     internal data class WeatherDetailsData(
             val temp: String,
             val minTemp: String,

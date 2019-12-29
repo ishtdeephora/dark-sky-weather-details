@@ -6,6 +6,9 @@ import com.example.android.weatherdetails.remote.remoteexceptions.RequestedDataN
 import retrofit2.Call
 import retrofit2.Response
 
+/**
+ * Response checker for [WeatherService] handles different exceptions based on the http codes
+ */
 fun retrofitCallExecutor(): (Call<ResponseDTO>) -> Response<ResponseDTO> = {
     it.execute().run {
         when {
