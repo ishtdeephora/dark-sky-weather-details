@@ -19,10 +19,12 @@ fun convertFahrenheitToCelsius(temperatureFahrenheit: Double?): Double? =
             ((temperatureFahrenheit - 32) * 5) / 9
         else null
 
-val geocoderLatLongFetcher: (Context, String) -> Address =
+val geocoderLatLongFetcher: (Context, String) -> Result<Address> =
         { context, address ->
-            Geocoder(context, Locale.US).getFromLocationName(address, 1).get(0).run {
-                Address(this.latitude.toString(), this.longitude.toString())
+            runCatching {
+                Geocoder(context, Locale.US).getFromLocationName(address, 1).get(0).run {
+                    Address(this.latitude.toString(), this.longitude.toString())
+                }
             }
         }
 
