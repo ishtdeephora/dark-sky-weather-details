@@ -9,6 +9,12 @@ import com.example.android.weatherdetails.utils.convertFahrenheitToCelsius
 import retrofit2.Call
 import retrofit2.Response
 
+/**
+ * [WeatherDetailsRemote] is the remote implementation for the [WeatherService]
+ *
+ * @param [executor] has the responsibility for converting the client call to sever response
+ * this executor can be further used to make a generic conversion from [Call<T>] to [Response<T>] and parsers to make conversions
+ */
 internal class WeatherDetailsRemote(
         private val executor: (Call<ResponseDTO>) -> Response<ResponseDTO> = retrofitCallExecutor()
 ) {

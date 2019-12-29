@@ -12,11 +12,13 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
 import java.util.*
 
+//Home Activity for selecting the date and getting the weather details for the selected date and place
 
 class HomeActivity : AppCompatActivity() {
     private val cal = Calendar.getInstance()
-    private val viewModel: HomeActivityViewModel by lazy { ViewModelProviders.of(this).get(HomeActivityViewModel::class.java) }
 
+    //viewmodel reference
+    private val viewModel: HomeActivityViewModel by lazy { ViewModelProviders.of(this).get(HomeActivityViewModel::class.java) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,11 +60,17 @@ class HomeActivity : AppCompatActivity() {
             if (isPrimeDate(splitDate[0].toInt())) {
                 val epoch = dateFormat.parse(date_edit_text?.hint.toString())?.time
                 day_value.text = getString(R.string.weather_in_text).plus(" " + location_name_value.text.toString().toUpperCase() + " on ").plus(SimpleDateFormat(getString(R.string.day_time_format), Locale.US).format(dateFormat.parse(date_edit_text.hint.toString())))
+
+                //for fetching the day on the given date
                 val utcTime = (epoch?.div(1000))?.toInt()
+
+                /**
+                 * Don't make the api hit when location name is null or empty
+                 */
                 if (location_name_value.text.isNullOrEmpty().not()) {
                     content_loader.visibility = View.VISIBLE
-                    viewModel.initialize(weatherRepo = WEATHER_REPO(), latitude = geocoderLatLongFetcher(this, location_name_value.text.toString()).getOrNull()?.latitude
-                            ?: "", longitude = geocoderLatLongFetcher(this, location_name_value.text.toString()).getOrNull()?.longitude
+                    viewModel.initialize(weatherRepo = WEATHER_REPO(), latitude = geocodeLatLongFetcher(this, location_name_value.text.toString()).getOrNull()?.latitude
+                            ?: "", longitude = geocodeLatLongFetcher(this, location_name_value.text.toString()).getOrNull()?.longitude
                             ?: "", date = utcTime.toString())
                     content_loader.visibility = View.GONE
                 } else {
@@ -74,6 +82,7 @@ class HomeActivity : AppCompatActivity() {
             }
         }
 
+        //decrement operation of the date on the field
         previous_action.setOnClickListener {
             val splitDate = date_edit_text.hint.toString().split("/")
             Calendar.getInstance().apply {
@@ -82,6 +91,7 @@ class HomeActivity : AppCompatActivity() {
             }
         }
 
+        //increment operation of the date on the field
         next_action.setOnClickListener {
             val splitDate = date_edit_text.hint.toString().split("/")
             Calendar.getInstance().apply {
@@ -97,6 +107,7 @@ class HomeActivity : AppCompatActivity() {
         networkCheck()
     }
 
+    //Date picker dialog listener
     private fun dateSetListener(): DatePickerDialog.OnDateSetListener {
         return DatePickerDialog.OnDateSetListener { _, year, monthOfYear, dayOfMonth ->
             cal.set(Calendar.YEAR, year)
@@ -106,6 +117,7 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    //network connection check
     private fun networkCheck() {
         NetworkStateUtil.invoke(this).apply {
             when (this) {
