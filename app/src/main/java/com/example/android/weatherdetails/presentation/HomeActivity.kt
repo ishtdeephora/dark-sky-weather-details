@@ -7,10 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.example.android.weatherdetails.R
-import com.example.android.weatherdetails.utils.geocoderLatLongFetcher
-import com.example.android.weatherdetails.utils.getCurrentDateInAskedFormat
-import com.example.android.weatherdetails.utils.hideKeyboard
-import com.example.android.weatherdetails.utils.isPrimeDate
+import com.example.android.weatherdetails.utils.*
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,7 +21,7 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        networkCheck()
         val dateFormat = SimpleDateFormat(getString(R.string.date_format).format(cal.time), Locale.US)
         date_edit_text.hint = getCurrentDateInAskedFormat.invoke(getString(R.string.date_format))
         select_date.text = (getString(R.string.select_date_text))
@@ -95,12 +92,25 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
+    override fun onResume() {
+        super.onResume()
+        networkCheck()
+    }
+
     private fun dateSetListener(): DatePickerDialog.OnDateSetListener {
         return DatePickerDialog.OnDateSetListener { _, year, monthOfYear, dayOfMonth ->
             cal.set(Calendar.YEAR, year)
             cal.set(Calendar.MONTH, monthOfYear)
             cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
             date_edit_text.hint = SimpleDateFormat(getString(R.string.date_format), Locale.US).format(cal.time)
+        }
+    }
+
+    private fun networkCheck() {
+        NetworkStateUtil.invoke(this).apply {
+            when (this) {
+                false -> Toast.makeText(this@HomeActivity, getString(R.string.no_network_message), Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
