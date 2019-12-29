@@ -5,16 +5,20 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ViewModelProviders
 import com.example.android.weatherdetails.R
 import com.example.android.weatherdetails.utils.*
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 import java.util.*
 
 //Home Activity for selecting the date and getting the weather details for the selected date and place
 
-class HomeActivity : AppCompatActivity() {
+class HomeActivity : AppCompatActivity(), LifecycleObserver {
     private val cal = Calendar.getInstance()
 
     //viewmodel reference
@@ -43,7 +47,7 @@ class HomeActivity : AppCompatActivity() {
             //error handling from live data channel
         })
 
-        date_edit_text.setOnClickListener {
+        date_edit_text.setSafeOnClickListener {
             this.hideKeyboard(it)
             DatePickerDialog(this@HomeActivity, dateSetListener(),
                     cal.get(Calendar.YEAR),
@@ -51,39 +55,43 @@ class HomeActivity : AppCompatActivity() {
                     cal.get(Calendar.DAY_OF_MONTH)).show()
         }
 
-        fetch_details.setOnClickListener {
+        fetch_details.setSafeOnClickListener {
             temperature_value.text = getString(R.string.room_temperature_text)
             temperature_min_value.text = getString(R.string.temp_min_text)
             temperature_max_value.text = getString(R.string.temp_max_text)
             val splitDate = date_edit_text.hint.toString().split("/")
             this.hideKeyboard(it)
-            if (isPrimeDate(splitDate[0].toInt())) {
-                val epoch = dateFormat.parse(date_edit_text?.hint.toString())?.time
-                day_value.text = getString(R.string.weather_in_text).plus(" " + location_name_value.text.toString().toUpperCase() + " on ").plus(SimpleDateFormat(getString(R.string.day_time_format), Locale.US).format(dateFormat.parse(date_edit_text.hint.toString())))
 
-                //for fetching the day on the given date
-                val utcTime = (epoch?.div(1000))?.toInt()
+            when (isPrimeDate(splitDate[0].toInt())) {
+                true -> {
+                    val epoch = dateFormat.parse(date_edit_text?.hint.toString())?.time
+                    val locationNameValue = location_name_value.text.toString()
+                    //for fetching the day on the given date
+                    val utcTime = (epoch?.div(1000))?.toInt().toString()
+                    val dateForDay = dateFormat.parse(date_edit_text.hint.toString()) as Date
+                    day_value.text = getString(R.string.weather_in_text).plus(" " + locationNameValue.toUpperCase() + " on ").plus(SimpleDateFormat(getString(R.string.day_time_format), Locale.US).format(dateForDay))
 
-                /**
-                 * Don't make the api hit when location name is null or empty
-                 */
-                if (location_name_value.text.isNullOrEmpty().not()) {
-                    content_loader.visibility = View.VISIBLE
-                    viewModel.initialize(weatherRepo = WEATHER_REPO(), latitude = geocodeLatLongFetcher(this, location_name_value.text.toString()).getOrNull()?.latitude
-                            ?: "", longitude = geocodeLatLongFetcher(this, location_name_value.text.toString()).getOrNull()?.longitude
-                            ?: "", date = utcTime.toString())
-                    content_loader.visibility = View.GONE
-                } else {
-                    Toast.makeText(this, getString(R.string.no_location_message), Toast.LENGTH_SHORT).show()
+                    // Don't make the api hit when location name is null or empty
+                    if (locationNameValue.isEmpty().not()) {
+                        val deferred = GlobalScope.async(block = {
+                            geocodeLatLongFetcher(this@HomeActivity, locationNameValue)
+                        })
+
+                        runBlocking(block = {
+                            val address = deferred.await().getOrNull()
+                            viewModel.initialize(latitude = address?.latitude
+                                    ?: "", longitude = address?.longitude ?: "", date = utcTime)
+                        })
+                    } else showRequiredToast(this, getString(R.string.no_location_message))
+
                 }
-
-            } else {
-                Toast.makeText(this, getString(R.string.non_primary_message), Toast.LENGTH_LONG).show()
+                //show the toast message for non primary date
+                false -> showRequiredToast(this, getString(R.string.non_primary_message))
             }
         }
 
         //decrement operation of the date on the field
-        previous_action.setOnClickListener {
+        previous_action.setSafeOnClickListener {
             val splitDate = date_edit_text.hint.toString().split("/")
             Calendar.getInstance().apply {
                 set(Calendar.DATE, splitDate[0].toInt() - 1)
@@ -92,7 +100,7 @@ class HomeActivity : AppCompatActivity() {
         }
 
         //increment operation of the date on the field
-        next_action.setOnClickListener {
+        next_action.setSafeOnClickListener {
             val splitDate = date_edit_text.hint.toString().split("/")
             Calendar.getInstance().apply {
                 set(Calendar.DATE, splitDate[0].toInt() + 1)
@@ -108,14 +116,13 @@ class HomeActivity : AppCompatActivity() {
     }
 
     //Date picker dialog listener
-    private fun dateSetListener(): DatePickerDialog.OnDateSetListener {
-        return DatePickerDialog.OnDateSetListener { _, year, monthOfYear, dayOfMonth ->
-            cal.set(Calendar.YEAR, year)
-            cal.set(Calendar.MONTH, monthOfYear)
-            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-            date_edit_text.hint = SimpleDateFormat(getString(R.string.date_format), Locale.US).format(cal.time)
-        }
-    }
+    private fun dateSetListener(): DatePickerDialog.OnDateSetListener =
+            DatePickerDialog.OnDateSetListener { _, year, monthOfYear, dayOfMonth ->
+                cal.set(Calendar.YEAR, year)
+                cal.set(Calendar.MONTH, monthOfYear)
+                cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                date_edit_text.hint = SimpleDateFormat(getString(R.string.date_format), Locale.US).format(cal.time)
+            }
 
     //network connection check
     private fun networkCheck() {
